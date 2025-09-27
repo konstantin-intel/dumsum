@@ -6,3 +6,4 @@ langchain-openai
 langchain-ollama
 langchain-google-genai
 langchain-community
+logger

@@ -8,6 +8,12 @@ from langchain_core.prompts import ChatPromptTemplate, SystemMessagePromptTempla
 from langchain_core.messages import HumanMessage
 
 from common import get_data_file
+import logging
+
+# create logger
+logger = logging.getLogger('dumsum')
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(message)s',  datefmt='%Y-%m-%d %H:%M:%S')
+
 
 HR_FILE: Final = "hr.md"
 HR_FALLBACK_FILE: Final = "hr-fallback.md"
@@ -34,8 +40,18 @@ def extract_between_markers(text: str, marker1: str, marker2: str) -> str | None
     return text[start:end]
 
 def _chat():
+    formatter=logging.Formatter("%(asctime)s %(message)s")
+    # create log file for the chat
+    fh = logging.FileHandler('chat.log')        
+    fh.setFormatter(formatter)
+    # create console logger
+    ch = logging.StreamHandler()
+    ch.setFormatter(formatter)
+    # register
+    logger.addHandler(fh)
+    logger.addHandler(ch)
     if key:=os.environ.get("XAI_API_KEY"):
-        print("Using XAI")
+        logger.info("Using XAI")
         from langchain_openai import ChatOpenAI
         return ChatOpenAI(
             api_key=key,
@@ -46,7 +62,7 @@ def _chat():
         )
 
     if key:=os.environ.get("GROQ_API_KEY"):
-        print("Using Groq")
+        logger.info("Using Groq")
         from langchain_groq import ChatGroq
         return ChatGroq(
             api_key=key,
@@ -56,7 +72,7 @@ def _chat():
         )
 
     if key:=os.environ.get("ANTHROPIC_API_KEY"):    
-        print("Using Anthropic")
+        logger.info("Using Anthropic")
         from langchain_anthropic import ChatAnthropic
         return ChatAnthropic(
             api_key=key,
@@ -66,7 +82,7 @@ def _chat():
 
     if key:=os.environ.get("GITHUB_TOKEN"):
         # check https://github.com/marketplace/models
-        print("Using GithubOpenAI")
+        logger.info("Using GithubOpenAI")
         from langchain_openai import ChatOpenAI
         return ChatOpenAI(
             base_url="https://models.inference.ai.azure.com",
@@ -78,7 +94,7 @@ def _chat():
         )
     
     if key:=os.environ.get("GOOGLE_API_KEY"):
-        print("Using ChatGoogle")
+        logger.info("Using ChatGoogle")
         from langchain_google_genai import ChatGoogleGenerativeAI
         return ChatGoogleGenerativeAI(
             model=os.getenv("GOOGLE_MODEL", 'gemini-2.0-flash'),
@@ -87,7 +103,7 @@ def _chat():
         )
 
     if key:=os.environ.get("OPENAI_API_KEY"):
-        print("Using OpenAI")
+        logger.info("Using OpenAI")
         from langchain_openai import ChatOpenAI
         return ChatOpenAI(
             api_key=key,
@@ -97,7 +113,7 @@ def _chat():
         )
     
     # if key:=os.environ.get("ALIBABA_API_KEY"):
-    #     print("Using Alibaba")
+    #     logger.info("Using Alibaba")
     #     from langchain_openai import ChatOpenAI
     #     return ChatOpenAI(
     #         api_key=key,
@@ -108,7 +124,7 @@ def _chat():
     #     )
     
     if key:=os.environ.get("OPENROUTER_API_KEY"):
-        print("Using Openrouter")
+        logger.info("Using Openrouter")
         from langchain_openai import ChatOpenAI
         return ChatOpenAI(
             api_key=key,
@@ -119,7 +135,7 @@ def _chat():
         )
 
     if key:=os.environ.get("DEEPSEEK_API_KEY"):
-        print("Using DeepSeek")
+        logger.info("Using DeepSeek")
         from langchain_openai import ChatOpenAI
         return ChatOpenAI(
             api_key=key,
@@ -130,7 +146,7 @@ def _chat():
         )
 
     if key:=os.environ.get("GPT4FREE_KEY"):
-        print("Using Gpt4free")
+        logger.info("Using Gpt4free")
         from langchain_openai import ChatOpenAI
         return ChatOpenAI(
             api_key=key,
@@ -140,7 +156,7 @@ def _chat():
             seed=100,
         )
 
-    print("Using Ollama")
+    logger.info("Using Ollama")
     from langchain_ollama import ChatOllama
     return ChatOllama(
         model=os.getenv("OLLAMA_MODEL", "qwen2.5:latest",),
@@ -160,10 +176,10 @@ def matcher(job: str):
     try:
         chain = prompt_template | chat | JsonOutputParser() 
         res = chain.invoke({})
-        # print(res)
+        # logger.info(res)
         return res
     except Exception as ex:
-        print(f"Error decoding JSON: {ex}")
+        logger.info(f"Error decoding JSON: {ex}")
         # after hallucination take ex and call chat to convert response to json structure with expected format
         return matcher_fallback(ex.args[0])
 
@@ -175,10 +191,10 @@ def matcher_fallback(answer: str):
     try:
         chain = prompt_template | chat | JsonOutputParser() 
         res = chain.invoke({})
-        # print(res)
+        # logger.info(res)
         return res
     except Exception as ex:
-        print(f"Error decoding JSON: {ex}")
+        logger.info(f"Error decoding JSON: {ex}")
         return None    
 
 def answer(skill:str, options: list = []) -> dict:
@@ -195,10 +211,10 @@ def answer(skill:str, options: list = []) -> dict:
     try:
         chain = prompt_template | chat | JsonOutputParser() 
         res = chain.invoke({})
-        # print(res)
+        # logger.info(res)
         return res
     except Exception as ex:
-        print(f"Error decoding JSON: {ex}")
+        logger.info(f"Error decoding JSON: {ex}")
         return None    
 
 # testing
@@ -221,4 +237,4 @@ if __name__ == "__main__":
         from dotenv import load_dotenv
         load_dotenv(".key")
         
-    print(f"{_main_chat()}")
+    logger.info(f"{_main_chat()}")
