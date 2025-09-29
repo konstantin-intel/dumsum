@@ -11,9 +11,8 @@ from common import get_data_file
 import logging
 
 # create logger
-logger = logging.getLogger('dumsum')
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(message)s',  datefmt='%Y-%m-%d %H:%M:%S')
-
+logger = logging.getLogger('chat')
+logger.setLevel(logging.DEBUG)
 
 HR_FILE: Final = "hr.md"
 HR_FALLBACK_FILE: Final = "hr-fallback.md"
@@ -40,16 +39,17 @@ def extract_between_markers(text: str, marker1: str, marker2: str) -> str | None
     return text[start:end]
 
 def _chat():
-    formatter=logging.Formatter("%(asctime)s %(message)s")
+    formatter1=logging.Formatter("%(asctime)s %(message)s")
     # create log file for the chat
     fh = logging.FileHandler('chat.log')        
-    fh.setFormatter(formatter)
-    # create console logger
-    ch = logging.StreamHandler()
-    ch.setFormatter(formatter)
-    # register
+    fh.setFormatter(formatter1)
     logger.addHandler(fh)
+    # create console logger
+    formatter2=logging.Formatter("%(asctime)s %(message)s")    
+    ch = logging.StreamHandler()
+    ch.setFormatter(formatter2)
     logger.addHandler(ch)
+    #
     if key:=os.environ.get("XAI_API_KEY"):
         logger.info("Using XAI")
         from langchain_openai import ChatOpenAI
@@ -103,7 +103,7 @@ def _chat():
         )
 
     if key:=os.environ.get("OPENAI_API_KEY"):
-        logger.info("Using OpenAI")
+        #logger.info("Using OpenAI")
         from langchain_openai import ChatOpenAI
         return ChatOpenAI(
             api_key=key,

@@ -7,6 +7,7 @@ from typing_extensions import Final
 
 JOB_APPLICATION_RECORDS_CSV: Final = 'data/_records.csv'
 JOB_APPLICATION_RECORDS_DB: Final =  'data/_records.db'
+JOB_MATCH_RECORDS_DB: Final =  'data/_match_records.db'
 
 class JobApplicationRecords:
     def __init__(self, csv_path=JOB_APPLICATION_RECORDS_CSV):
@@ -98,3 +99,37 @@ class JobApplicationRecordsSQLite:
                 )
             conn.commit()
             return True
+
+class JobMatchRecordsSQLite:
+    def __init__(self, db_path=JOB_MATCH_RECORDS_DB):
+        self.db_path = db_path
+        self._init_db()
+
+    def _init_db(self):
+        os.makedirs(os.path.dirname(self.db_path), exist_ok=True)
+        with sqlite3.connect(self.db_path) as conn:
+            conn.execute('''
+                CREATE TABLE IF NOT EXISTS applications (
+                    job_position TEXT NOT NULL COLLATE NOCASE,
+                    company TEXT NOT NULL COLLATE NOCASE,
+                    match TEXT NOT NULL COLLATE NOCASE,
+                    date_str TEXT NOT NULL
+                )
+            ''')
+
+
+    def record(self, job_position: str, company: str, match):
+        """
+        Just add new record of (job_position, company, match_for_the_posiiton)
+        """
+        now = datetime.now()
+        job_position = job_position.strip()
+        company = company.strip()
+        match = str(match).strip()
+        with sqlite3.connect(self.db_path) as conn:
+            cur = conn.cursor()
+            cur.execute(
+                'INSERT INTO applications (job_position, company, match, date_str) VALUES (?, ?, ?, ?)',
+                (job_position, company, match, now.strftime('%Y-%m-%d-%H-%M-%S'))
+            )
+            conn.commit()

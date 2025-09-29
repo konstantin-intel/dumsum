@@ -77,6 +77,7 @@ def config():
     parser.add_argument("--speed", type=int, required=False, default=1, help="Speed of the process. 0 - slow(default), 1 - fast")
     parser.add_argument("--click-apply", action='store_true', default=True, required=False, help="Click to 'Apply' button")
     parser.add_argument("--click-easy-apply", action='store_true', default=True, required=False, help="Click to 'Easy Apply' button")
+    parser.add_argument("--keep-linkedin-com-read-only", action='store_true', default=False, required=False, help="Never update or change linkedin.com")
     parser.add_argument("--max-pages", type=int, required=False, default=1000, help="Max pages to process. default 1000")
     parser.add_argument("--debug-easy-apply-form", action='store_true', default=False, required=False, help="Debug: use 'easy apply' form to current position only")
     parser.add_argument("--debug-matcher", action='store_true', default=False, required=False, help="Debug: show match value only")

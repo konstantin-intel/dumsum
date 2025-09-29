@@ -5,14 +5,15 @@ from chat import IGNORE_FILE, URLS_FILE, matcher
 from common import *
 from defaults import Defaults
 import linkedin_easy_apply as easy_apply
-from job_application_records import JobApplicationRecords, JobApplicationRecordsSQLite
+from job_application_records import JobApplicationRecords, JobApplicationRecordsSQLite, JobMatchRecordsSQLite
 
 import logging
 # create logger
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(message)s',  datefmt='%Y-%m-%d %H:%M:%S')
-logger = logging.getLogger('dumsum')
+logger = logging.getLogger('linkedin')
+logger.setLevel(logging.DEBUG)
 
 jobApplicationRecords: Final = JobApplicationRecordsSQLite()
+JobMatchRecords : Final = JobMatchRecordsSQLite()
 
 def filter_company(job_company):
     """Filter out ignored company and dismiss the position"""
@@ -79,7 +80,8 @@ def job_positions(page, defaults: Defaults, easy_apply_form):
             logger.info(">>> skip: already applied")
             if loc := locator_exists(p, 'button.job-card-container__action-small'):
                 if locator_exists(p, 'svg[data-test-icon="close-small"]'):
-                    loc.click() 
+                    if not config().keep_linkedin_com_read_only:
+                        loc.click() 
             continue
 
         p.click()
@@ -114,9 +116,12 @@ def job_positions(page, defaults: Defaults, easy_apply_form):
         logger.info(f">>> use '{get_job_title(p)}' {job_company}", )    
         (match, skip) = use_matcher(job_description)
         set_match(p, match)
+        # record 
         logger.info("resume-to-job-description match={}".format(match))
+        JobMatchRecords.record(job_title, job_company, match)
         if 1 <= int(match) <= config().matcher_ignore:
-            p.locator('button.job-card-container__action-small').click() # do not show the position again, click on cross
+            if not config().keep_linkedin_com_read_only:
+                p.locator('button.job-card-container__action-small').click() # do not show the position again, click on cross
             logger.info(">>> don't show position again. match is low")
         if skip:
             continue
@@ -127,7 +132,8 @@ def job_positions(page, defaults: Defaults, easy_apply_form):
                 if b.text_content().strip() == 'Apply':
                     if config().click_apply:
                         logger.info(">>> click apply")
-                        p.locator('button.job-card-container__action-small').click() # do not show the position again, click on cross
+                        if not config().keep_linkedin_com_read_only:                        
+                            p.locator('button.job-card-container__action-small').click() # do not show the position again, click on cross
                         b.click()
                     applied = True
                     break
@@ -148,7 +154,8 @@ def job_positions(page, defaults: Defaults, easy_apply_form):
                 continue
         else:
             logger.info(">>> can't apply")
-            p.locator('button.job-card-container__action-small').click() # do not show the position again, click on cross
+            if not config().keep_linkedin_com_read_only:
+                p.locator('button.job-card-container__action-small').click() # do not show the position again, click on cross
             continue
         
         # for easy apply form
@@ -163,7 +170,8 @@ def job_positions(page, defaults: Defaults, easy_apply_form):
                 page.locator('div[role="dialog"]').locator('button[aria-label="Dismiss"]').click()
             except Exception as ex:
                 logger.info(f"error: {ex}")
-            p.locator('button.job-card-container__action-small').click() # do not show the position again, click on cross
+            if not config().keep_linkedin_com_read_only:                
+                p.locator('button.job-card-container__action-small').click() # do not show the position again, click on cross
             logger.info(">>> don't show position again")
         else:
             logger.info(">>> easy apply form failed")
@@ -223,7 +231,7 @@ def run(engine: Playwright):
         return
 
     chromium = engine.chromium
-    connectStr = "ws://localhost:9222/devtools/browser/ccc23d45-3eaa-4fba-aeaa-75bd30b31da4" # use ws:// when running under debugger
+    connectStr = "ws://localhost:9222/devtools/browser/b3baab7f-1a17-4953-9ee5-2d730b9cdaae" # use ws:// when running under debugger
     #connectStr = os.getenv('CDP_HOST', 'http://localhost:9222')
     browser = chromium.connect_over_cdp(endpoint_url=connectStr, timeout=0, headers=None)
     if config().url:
@@ -241,17 +249,17 @@ def run(engine: Playwright):
         try_page()
 
 with sync_playwright() as playwright:
-    formatter=logging.Formatter("%(asctime)s %(message)s")
+    formatter1=logging.Formatter("%(asctime)s %(message)s")
     # create log file for the chat
     fh = logging.FileHandler('linkedin.log')        
-    fh.setFormatter(formatter)
-    # create console logger
-    ch = logging.StreamHandler()
-    ch.setFormatter(formatter)
-    # register
+    fh.setFormatter(formatter1)
     logger.addHandler(fh)
+    # create console logger
+    formatter2=logging.Formatter("%(asctime)s %(message)s")    
+    ch = logging.StreamHandler()
+    ch.setFormatter(formatter2)
     logger.addHandler(ch)
-
+    #
     if os.path.exists(".key"):
         from dotenv import load_dotenv
         load_dotenv(".key")
