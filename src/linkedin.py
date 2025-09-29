@@ -181,7 +181,7 @@ def job_paginator(page, defaults: Defaults, job_positions):
     if locator_exists(page, 'button[aria-label="View next page"]'):
         max_pages = int(config().max_pages)
         for i in range(max_pages):
-            # logger.info(f">>> page {i} of {max_pages}")
+            logger.info(f">>> page {i} of {max_pages}")
             job_positions(page, defaults, easy_apply.easy_apply_form)
             if i == max_pages - 1:
                 logger.info(f">>> max pages reached: {max_pages}")
@@ -231,8 +231,8 @@ def run(engine: Playwright):
         return
 
     chromium = engine.chromium
-    connectStr = "ws://localhost:9222/devtools/browser/b3baab7f-1a17-4953-9ee5-2d730b9cdaae" # use ws:// when running under debugger
-    #connectStr = os.getenv('CDP_HOST', 'http://localhost:9222')
+    #connectStr = "ws://localhost:9222/devtools/browser/57023963-6140-4608-b909-614a4a67060c" # use ws:// when running under debugger
+    connectStr = os.getenv('CDP_HOST', 'http://localhost:9222')
     browser = chromium.connect_over_cdp(endpoint_url=connectStr, timeout=0, headers=None)
     if config().url:
         logger.info(f">>> open {config().url}")
