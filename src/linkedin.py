@@ -221,7 +221,7 @@ def run(engine: Playwright):
             if page.url.startswith('https://www.linkedin.com/jobs/'):
                 logger.info(f">>> linkedin.com/jobs/ found")
                 exec_page(page)
-                page.close()
+                #page.close()
                 logger.info(f"done")
                 return
         logger.info(">>> linkedin.com/jobs/ not found")

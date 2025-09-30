@@ -50,10 +50,4 @@ Hardware-focused Software Engineer with 15+ years of experience in **FPGA design
 ## Education  
 **Master of Science in Applied Mathematics**  
 Novosibirsk State University – Novosibirsk, Russia  
-
----
-
-## Achievements (Optional Add-on Section)  
-- Delivered tester upgrades at Altera resulting in **major cost reductions** in production testing.  
-- Recognized at Intel for cross-functional collaboration on HDMT Gen3 project.  
-- Extensive track record of **production support**, ensuring continuity of mission-critical test platforms.  
+ 
