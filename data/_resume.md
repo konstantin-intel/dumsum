@@ -1,6 +1,6 @@
 # Konstantin Okunev
-📧 [misteroks@gmail.com](mailto:misteroks@gmail.com) | 📞 (650) 224-7623  
-🔗 [linkedin.com/in/konstantin-okunev](http://www.linkedin.com/in/konstantin-okunev) | 📍 Mountain View, CA  
+ [misteroks@gmail.com](mailto:misteroks@gmail.com) |  (650) 224-7623  
+ [linkedin.com/in/konstantin-okunev](http://www.linkedin.com/in/konstantin-okunev) |  Mountain View, CA  
 
 ---
 
