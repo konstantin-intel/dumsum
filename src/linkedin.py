@@ -31,11 +31,13 @@ def get_job_title(page):
         return ' '.join(l.text_content().split())
     if l := locator_exists(page, 'a.job-card-job-posting-card-wrapper__card-link'):
         return ' '.join(l.text_content().split())
-    return None
+    return 'Unable to extract job_title'
 
 def get_job_company(page): 
     if l := locator_exists(page, 'div.artdeco-entity-lockup__subtitle'):
         return ' '.join(l.text_content().split())
+    else:
+        return 'Unable to extract job_company'
 
 def set_match(page, match):
     if l := locator_exists(page, 'a.job-card-list__title--link >> span[aria-hidden="true"] >> strong'):
@@ -60,7 +62,12 @@ def job_positions(page, defaults: Defaults, easy_apply_form):
     # logger.info(f"# positions: {len(plist)}")
     for p in plist:
         p.scroll_into_view_if_needed()
-        page.wait_for_timeout(1_000)
+        # ensure focus on the page
+        page.bring_to_front()
+        #header = page.get_by_title('Top job picks for you')
+        #header.click()
+        p.click()
+        #page.wait_for_timeout(1_000)
 
         job_company = get_job_company(p)
         job_title = get_job_title(p)
