@@ -225,6 +225,7 @@ def exec_page(page):
 def run(engine: Playwright):
     def try_page():
         for page in browser.contexts[0].pages:
+            logger.info("url='{}'".format(page.url))
             if page.url.startswith('https://www.linkedin.com/jobs/'):
                 logger.info(f">>> linkedin.com/jobs/ found")
                 exec_page(page)
@@ -238,7 +239,7 @@ def run(engine: Playwright):
         return
 
     chromium = engine.chromium
-    #connectStr = "ws://localhost:9222/devtools/browser/57023963-6140-4608-b909-614a4a67060c" # use ws:// when running under debugger
+    #connectStr = "ws://localhost:9222/devtools/browser/4aa1cce9-6e5d-4caa-ae26-f9cb1567035e" # use ws:// when running under debugger
     connectStr = os.getenv('CDP_HOST', 'http://localhost:9222')
     browser = chromium.connect_over_cdp(endpoint_url=connectStr, timeout=0, headers=None)
     if config().url:
