@@ -66,7 +66,12 @@ def job_positions(page, defaults: Defaults, easy_apply_form):
         page.bring_to_front()
         #header = page.get_by_title('Top job picks for you')
         #header.click()
-        p.click()
+        try:
+            p.click()
+        except TimeoutError:
+            logger.exception("Timeout waiting for the click event")
+        except:
+            logger.error("Undefined eror after the click event")
         #page.wait_for_timeout(1_000)
 
         job_company = get_job_company(p)
